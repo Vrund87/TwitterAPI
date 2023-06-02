@@ -1,0 +1,49 @@
+#Get tweets by keyword
+GET tweets_index/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "Enter_search_terms_here",
+      "fields": [
+        "message",
+        "hashtag"
+      ]
+    }
+  }
+}
+
+#Get tweets within time range
+GET tweets_index/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match_phrase": {
+            "message": "enter_keyword"
+          }
+        }
+      ],
+      "filter": {
+        "range": {
+          "created_time": {
+            "gte": "enter_starting_date",
+            "lte": "enter_ending_date"
+          }
+        }
+      }
+    }
+  }
+}
+
+#Get tweets by username
+GET tweets_index/_search
+{
+  "query": {
+    "match": {
+      "username": {
+        "query": "enter_username"
+      }
+    }
+  }
+}
