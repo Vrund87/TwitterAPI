@@ -1,27 +1,19 @@
-PUT tweets_index
-{
-  "mappings": {
-    "properties": {
-      "tweet_id": {
-        "type": "long"
-      },
-      "message": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword"
-          }
-        }
-      },
-      "created_time": {
-        "type": "date"
-      },
-      "hashtag": {
-        "type": "text"
-      },
-      "username": {
-        "type": "keyword"
-      }
+"mappings": {
+  "properties": {
+    "tweet_id": {
+      "type": "long"
+    },
+    "message": {
+      "type": "text"
+    },
+    "created_time": {
+      "type": "date"
+    },
+    "hashtag": {
+      "type": "text"
+    },
+    "username": {
+      "type": "keyword"
     }
   }
 }
