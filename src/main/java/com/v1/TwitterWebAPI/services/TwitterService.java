@@ -1,9 +1,17 @@
 package com.v1.TwitterWebAPI.services;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.v1.TwitterWebAPI.dataCache.CacheTwitter;
+import com.v1.TwitterWebAPI.models.ElasticsearchTwitterUser;
 import com.v1.TwitterWebAPI.models.TwitterUser;
 import com.v1.TwitterWebAPI.repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.FetchSourceFilterBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,6 +26,9 @@ public class TwitterService {
 
     @Autowired
     private CacheTwitter<TwitterUser> twitterUserCache;
+
+    @Autowired
+    public ElasticsearchOperations elasticsearchOperations;
 
     public List<TwitterUser> getAllUsers(){
         return userRepo.findAll();
@@ -55,5 +66,23 @@ public class TwitterService {
 
     public void storeUser(TwitterUser twitterUser){
         userRepo.save(twitterUser);
+    }
+
+    public List<String> searchTweets(String query){
+        Query multimatchquery = MatchQuery.of(m -> m
+                .field("message")
+                .field("hashtag")
+                .query(query))._toQuery() ;
+
+        NativeQuery searchQuery2 = NativeQuery.builder()
+                .withSourceFilter(new FetchSourceFilterBuilder().withIncludes().build())
+                .withQuery(multimatchquery)
+                .withSort(Sort.by(Sort.Direction.ASC, "created_time"))
+                .build();
+
+        List<String> tweets = new ArrayList<>();
+        SearchHits<ElasticsearchTwitterUser> searchHits = elasticsearchOperations.search(searchQuery2, ElasticsearchTwitterUser.class);
+        searchHits.forEach(searchHit ->  tweets.add(searchHit.getContent().getMessage()));
+        return tweets;
     }
 }
