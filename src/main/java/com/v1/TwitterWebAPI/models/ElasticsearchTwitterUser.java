@@ -1,13 +1,15 @@
 package com.v1.TwitterWebAPI.models;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.Date;
 import java.util.List;
-
 @Document(indexName = "tweets_index")
 public class ElasticsearchTwitterUser {
+    @Id
     @Field(type = FieldType.Long)
     private long tweet_id;
 
@@ -15,7 +17,7 @@ public class ElasticsearchTwitterUser {
     private String message;
 
     @Field(type = FieldType.Date)
-    private String created_time;
+    private Date created_time;
 
     @Field(type = FieldType.Text)
     private List<String> hashtag;
@@ -39,11 +41,11 @@ public class ElasticsearchTwitterUser {
         this.message = message;
     }
 
-    public String getCreated_time() {
+    public Date getCreated_time() {
         return created_time;
     }
 
-    public void setCreated_time(String created_time) {
+    public void setCreated_time(Date created_time) {
         this.created_time = created_time;
     }
 
