@@ -60,4 +60,9 @@ public class TwitterController {
     public List<String> searchTweetsByTimeRange(@RequestParam("start") Date sdate, @RequestParam("end") Date edate, @RequestParam("keyword") String keyword){
         return twitterService.searchTweetsByTimeRange(sdate, edate, keyword);
     }
+
+    @GetMapping("/tweets/user")
+    public List<String> searchTweetsByUsername(@RequestParam("username") String username){
+        return twitterService.searchTweetsByUsername(username);
+    }
 }

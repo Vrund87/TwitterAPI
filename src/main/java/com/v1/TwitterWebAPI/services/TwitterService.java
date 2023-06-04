@@ -107,4 +107,21 @@ public class TwitterService {
         searchHits.forEach(searchHit ->  tweets.add(searchHit.getContent().getMessage()));
         return tweets;
     }
+
+    public List<String> searchTweetsByUsername(String username){
+        Query matchquery = MatchQuery.of(m -> m
+                .field("username")
+                .query(username))._toQuery();
+
+        NativeQuery searchQuery2 = NativeQuery.builder()
+                .withSourceFilter(new FetchSourceFilterBuilder().withIncludes().build())
+                .withQuery(matchquery)
+                .withSort(Sort.by(Sort.Direction.ASC, "created_time"))
+                .build();
+
+        List<String> tweets = new ArrayList<>();
+        SearchHits<ElasticsearchTwitterUser> searchHits = elasticsearchOperations.search(searchQuery2, ElasticsearchTwitterUser.class);
+        searchHits.forEach(searchHit ->  tweets.add(searchHit.getContent().getMessage()));
+        return tweets;
+    }
 }
