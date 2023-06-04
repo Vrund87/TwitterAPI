@@ -1,7 +1,7 @@
 package com.v1.TwitterWebAPI.services;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
+import co.elastic.clients.json.JsonData;
 import com.v1.TwitterWebAPI.dataCache.CacheTwitter;
 import com.v1.TwitterWebAPI.models.ElasticsearchTwitterUser;
 import com.v1.TwitterWebAPI.models.TwitterUser;
@@ -14,10 +14,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilterBuilder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class TwitterService {
@@ -68,15 +65,40 @@ public class TwitterService {
         userRepo.save(twitterUser);
     }
 
-    public List<String> searchTweets(String query){
+    public List<String> searchTweetsByKeyword(String query){
         Query multimatchquery = MatchQuery.of(m -> m
                 .field("message")
                 .field("hashtag")
-                .query(query))._toQuery() ;
+                .query(query))._toQuery();
 
         NativeQuery searchQuery2 = NativeQuery.builder()
                 .withSourceFilter(new FetchSourceFilterBuilder().withIncludes().build())
                 .withQuery(multimatchquery)
+                .withSort(Sort.by(Sort.Direction.ASC, "created_time"))
+                .build();
+
+        List<String> tweets = new ArrayList<>();
+        SearchHits<ElasticsearchTwitterUser> searchHits = elasticsearchOperations.search(searchQuery2, ElasticsearchTwitterUser.class);
+        searchHits.forEach(searchHit ->  tweets.add(searchHit.getContent().getMessage()));
+        return tweets;
+    }
+
+    public List<String> searchTweetsByTimeRange(Date sdate, Date edate, String keyword){
+        Query matchPhraseQuery = MatchPhraseQuery.of(m -> m
+                .field("message")
+                .query(keyword))._toQuery();
+        Query rangeQuery = RangeQuery.of(r -> r
+                .field("created_time")
+                .gte((JsonData) sdate)
+                .lte((JsonData) edate))._toQuery();
+
+        Query boolQuery = BoolQuery.of(b -> b
+                .must(matchPhraseQuery)
+                .filter(rangeQuery))._toQuery();
+
+        NativeQuery searchQuery2 = NativeQuery.builder()
+                .withSourceFilter(new FetchSourceFilterBuilder().withIncludes().build())
+                .withQuery(boolQuery)
                 .withSort(Sort.by(Sort.Direction.ASC, "created_time"))
                 .build();
 

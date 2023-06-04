@@ -7,6 +7,7 @@ import com.v1.TwitterWebAPI.services.TwitterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -50,8 +51,13 @@ public class TwitterController {
         return twitterService.getCommonFollowers(username1, username2);
     }
 
-    @GetMapping("/tweets/search")
-    public List<String> searchTweets(@RequestParam("query") String query) {
-        return twitterService.searchTweets(query);
+    @GetMapping("/tweets/keyword")
+    public List<String> searchTweetsByKeyword(@RequestParam("query") String query) {
+        return twitterService.searchTweetsByKeyword(query);
+    }
+
+    @GetMapping("/tweets/timerange")
+    public List<String> searchTweetsByTimeRange(@RequestParam("start") Date sdate, @RequestParam("end") Date edate, @RequestParam("keyword") String keyword){
+        return twitterService.searchTweetsByTimeRange(sdate, edate, keyword);
     }
 }
