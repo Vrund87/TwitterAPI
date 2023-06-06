@@ -57,7 +57,7 @@ public class TwitterController {
     }
 
     @GetMapping("/tweets/timerange")
-    public List<String> searchTweetsByTimeRange(@RequestParam("start") Date sdate, @RequestParam("end") Date edate, @RequestParam("keyword") String keyword){
+    public List<String> searchTweetsByTimeRange(@RequestParam("start") String sdate, @RequestParam("end") String edate, @RequestParam("keyword") String keyword){
         return twitterService.searchTweetsByTimeRange(sdate, edate, keyword);
     }
 

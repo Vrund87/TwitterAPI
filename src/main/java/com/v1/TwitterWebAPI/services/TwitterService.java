@@ -66,31 +66,39 @@ public class TwitterService {
     }
 
     public List<String> searchTweetsByKeyword(String query){
-        Query multimatchquery = MatchQuery.of(m -> m
-                .field("message")
+        Query queryforhashtag = MatchQuery.of(m -> m
                 .field("hashtag")
                 .query(query))._toQuery();
 
+        Query queryformessage = MatchQuery.of(m -> m
+                .field("message")
+                .query(query))._toQuery();
+
+        Query boolQuery = BoolQuery.of(b -> b
+                .should(queryforhashtag)
+                .should(queryformessage))._toQuery();
+
         NativeQuery searchQuery2 = NativeQuery.builder()
                 .withSourceFilter(new FetchSourceFilterBuilder().withIncludes().build())
-                .withQuery(multimatchquery)
+                .withQuery(boolQuery)
                 .withSort(Sort.by(Sort.Direction.ASC, "created_time"))
                 .build();
 
         List<String> tweets = new ArrayList<>();
         SearchHits<ElasticsearchTwitterUser> searchHits = elasticsearchOperations.search(searchQuery2, ElasticsearchTwitterUser.class);
+        System.out.println(searchHits);
         searchHits.forEach(searchHit ->  tweets.add(searchHit.getContent().getMessage()));
         return tweets;
     }
 
-    public List<String> searchTweetsByTimeRange(Date sdate, Date edate, String keyword){
+    public List<String> searchTweetsByTimeRange(String sdate, String edate, String keyword){
         Query matchPhraseQuery = MatchPhraseQuery.of(m -> m
                 .field("message")
                 .query(keyword))._toQuery();
         Query rangeQuery = RangeQuery.of(r -> r
                 .field("created_time")
-                .gte((JsonData) sdate)
-                .lte((JsonData) edate))._toQuery();
+                .gte(JsonData.fromJson(sdate))
+                .lte(JsonData.fromJson(edate)))._toQuery();
 
         Query boolQuery = BoolQuery.of(b -> b
                 .must(matchPhraseQuery)

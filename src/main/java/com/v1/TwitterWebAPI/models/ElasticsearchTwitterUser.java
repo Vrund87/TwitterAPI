@@ -17,7 +17,7 @@ public class ElasticsearchTwitterUser {
     private String message;
 
     @Field(type = FieldType.Date)
-    private Date created_time;
+    private String created_time;
 
     @Field(type = FieldType.Text)
     private List<String> hashtag;
@@ -41,11 +41,11 @@ public class ElasticsearchTwitterUser {
         this.message = message;
     }
 
-    public Date getCreated_time() {
+    public String getCreated_time() {
         return created_time;
     }
 
-    public void setCreated_time(Date created_time) {
+    public void setCreated_time(String created_time) {
         this.created_time = created_time;
     }
 
