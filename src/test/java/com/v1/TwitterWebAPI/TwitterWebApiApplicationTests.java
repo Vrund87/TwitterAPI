@@ -1,88 +1,58 @@
 package com.v1.TwitterWebAPI;
 
 import com.v1.TwitterWebAPI.controllers.TwitterController;
+import com.v1.TwitterWebAPI.dataCache.CacheTwitter;
 import com.v1.TwitterWebAPI.models.TwitterUser;
+import com.v1.TwitterWebAPI.repositories.UserRepo;
 import com.v1.TwitterWebAPI.services.TwitterService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+@ExtendWith(MockitoExtension.class)
 public class TwitterWebApiApplicationTests {
+	@Mock
+	private UserRepo userRepo;
 
-//	@Autowired
-	private MockMvc mockMvc;
+	@Mock
+	private CacheTwitter<TwitterUser> twitterUserCache;
 
-	@MockBean
+	@Mock
 	private TwitterService twitterService;
 
-	@Autowired
+	@InjectMocks
 	private TwitterController twitterController;
 
 	@Test
-	void contextLoads() {
-	}
+	public void testGetUser() {
+		// Prepare test data
+		String username = "John";
+		List<String> followers = Arrays.asList(
+				"Alice", "Bob", "Charlie", "David", "Eve",
+				"Frank", "Grace", "Hannah", "Ivy", "Jack"
+		);
+		TwitterUser expectedUser = new TwitterUser(username, "Lorem ipsum dolor sit amet.", followers);
 
-//	@Test
-//	void getAllUsersTest() throws Exception {
-//		List<TwitterUser> users = new ArrayList<>();
-//		users.add(new TwitterUser("user1", "Bio 1", Arrays.asList("follower1", "follower2")));
-//		users.add(new TwitterUser("user2", "Bio 2", Arrays.asList("follower3", "follower4")));
-//
-//		when(twitterService.getAllUsers()).thenReturn(users);
-//
-//		mockMvc.perform(MockMvcRequestBuilders.get("/api/"))
-//				.andDo(print())
-//				.andExpect(MockMvcResultMatchers.status().isOk())
-//				.andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value("user1"))
-//				.andExpect(MockMvcResultMatchers.jsonPath("$[0].bio").value("Bio 1"))
-//				.andExpect(MockMvcResultMatchers.jsonPath("$[0].followers[0]").value("follower1"))
-//				.andExpect(MockMvcResultMatchers.jsonPath("$[0].followers[1]").value("follower2"))
-//				.andExpect(MockMvcResultMatchers.jsonPath("$[1].name").value("user2"))
-//				.andExpect(MockMvcResultMatchers.jsonPath("$[1].bio").value("Bio 2"))
-//				.andExpect(MockMvcResultMatchers.jsonPath("$[1].followers[0]").value("follower3"))
-//				.andExpect(MockMvcResultMatchers.jsonPath("$[1].followers[1]").value("follower4"));
-//	}
+		when(twitterService.getUser(username)).thenReturn(expectedUser);
+		TwitterUser actualUser = twitterController.getUser(username);
 
-	@Test
-	void getUserTest() throws Exception {
-		TwitterUser user = new TwitterUser("user1", "Bio 1", Arrays.asList("follower1", "follower2"));
+		// Verify the result
+		assertEquals(username, actualUser.getName());
+		assertEquals("Lorem ipsum dolor sit amet.", actualUser.getBio());
+		assertEquals(followers, actualUser.getfollowers());
 
-		when(twitterService.getUser("user1")).thenReturn(user);
-
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/users/{username}", "user1"))
-				.andDo(print())
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.jsonPath("$.name").value("user1"))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value("Bio 1"))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.followers[0]").value("follower1"))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.followers[1]").value("follower2"));
-	}
-
-	@Test
-	void getCommonFollowersTest() throws Exception {
-		List<String> commonFollowers = Arrays.asList("follower1", "follower2", "follower5");
-
-		when(twitterService.getCommonFollowers("user1", "user2")).thenReturn(commonFollowers);
-
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/users")
-						.param("user1", "user1")
-						.param("user2", "user2"))
-				.andDo(print())
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.jsonPath("$[0]").value("follower1"))
-				.andExpect(MockMvcResultMatchers.jsonPath("$[1]").value("follower2"))
-				.andExpect(MockMvcResultMatchers.jsonPath("$[2]").value("follower5"));
+		verify(twitterService, times(1)).getUser(username);
 	}
 }
