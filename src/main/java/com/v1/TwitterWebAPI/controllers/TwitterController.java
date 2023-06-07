@@ -1,11 +1,13 @@
 package com.v1.TwitterWebAPI.controllers;
 
 import com.v1.TwitterWebAPI.dataCache.CacheTwitter;
+import com.v1.TwitterWebAPI.models.ElasticsearchTwitterUser;
 import com.v1.TwitterWebAPI.models.TwitterUser;
 import com.v1.TwitterWebAPI.services.TwitterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -44,8 +46,23 @@ public class TwitterController {
         return userRecordFromDB;
     }
 
-    @GetMapping("/users")
+    @GetMapping("/users/commonfollowers")
     public List<String> getCommonFollowers(@RequestParam("user1") String username1, @RequestParam("user2") String username2){
         return twitterService.getCommonFollowers(username1, username2);
+    }
+
+    @GetMapping("/tweets/keyword")
+    public List<String> searchTweetsByKeyword(@RequestParam("query") String query) {
+        return twitterService.searchTweetsByKeyword(query);
+    }
+
+    @GetMapping("/tweets/timerange")
+    public List<String> searchTweetsByTimeRange(@RequestParam("start") String sdate, @RequestParam("end") String edate, @RequestParam("keyword") String keyword){
+        return twitterService.searchTweetsByTimeRange(sdate, edate, keyword);
+    }
+
+    @GetMapping("/tweets/user")
+    public List<String> searchTweetsByUsername(@RequestParam("username") String username){
+        return twitterService.searchTweetsByUsername(username);
     }
 }

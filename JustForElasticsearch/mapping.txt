@@ -1,0 +1,19 @@
+"mappings": {
+  "properties": {
+    "tweet_id": {
+      "type": "long"
+    },
+    "message": {
+      "type": "text"
+    },
+    "created_time": {
+      "type": "date"
+    },
+    "hashtag": {
+      "type": "text"
+    },
+    "username": {
+      "type": "keyword"
+    }
+  }
+}
